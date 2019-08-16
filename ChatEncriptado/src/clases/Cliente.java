@@ -8,8 +8,11 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 
+import hilos.HiloEscribirUsuario;
+import hilos.HiloLeerUsuario;
+
 public class Cliente {
-	
+
 	/*
 	 * 
 	 * Direccion local de la maquina
@@ -18,7 +21,7 @@ public class Cliente {
 	/**
 	 * Puerto por donde se establecera la conexion
 	 */
-	public static final int PORT = 8000;
+	public static final int PORT = 9000;
 	/**
 	 * Socket que permitira la conexion con el servidor
 	 */
@@ -27,6 +30,11 @@ public class Cliente {
 	 * Clave para encriptar el mensaje.
 	 */
 	private static int claveEncriptar;
+	
+	/**
+	 * Clave para encriptar el mensaje antes de ser desencriptada.
+	 */
+	private static String claveEncriptada;
 	/**
 	 * Numero de identificacion del cliente respecto al servidor.
 	 */
@@ -35,46 +43,56 @@ public class Cliente {
 	 * Mensaje a enviar a otro cliente.
 	 */
 	private static String mensaje;
-	
+
 	/**
 	 * Main
+	 * 
 	 * @param args
 	 */
-	public static void main(String[] args) {
+	
+	public Cliente() {
 		
+		
+	}
+	public static void main(String[] args) {
+		Cliente client = new Cliente();
+
 		DataInputStream in;
 		DataOutputStream out;
 
 		try {
-			
-			BufferedReader br = new BufferedReader(new InputStreamReader( System.in));
+
+			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
-			
-			System.out.println("::Cliente disponible para ser atendido:: \nIngrese "
-					+ "el mensaje para encriptar!!::");
-			
+
+			System.out.println("::Cliente disponible para ser atendido:: \nIngrese " + "el mensaje para encriptar!!::");
+
 			socket = new Socket(LOCAL_HOST, PORT);
-			String mensaje = br.readLine();
+
+			
 			in = new DataInputStream(socket.getInputStream());
 			out = new DataOutputStream(socket.getOutputStream());
-			out.writeUTF(mensaje);
-			claveEncriptar = Integer.parseInt(in.readUTF());
-			System.out.println(claveEncriptar);
-			String mensajeDelServidor = in.readUTF();
-			mensajeDelServidor = desEncriptar(mensajeDelServidor);
-			bw.write("Su encriptacion fue : " + mensajeDelServidor);
-			bw.flush();
-			bw.close();
-			br.close();
-			socket.close();
-			in.close();
-			out.close();
+			HiloLeerUsuario hiloLee = new HiloLeerUsuario(client, in, out, br, bw);
+			hiloLee.start();
+			HiloEscribirUsuario hiloEscribe = new HiloEscribirUsuario(client, in, out, br, bw);
+			hiloEscribe.start();
+//			out.writeUTF(mensaje);
+//			claveEncriptar = Integer.parseInt(in.readUTF());
+//			System.out.println(claveEncriptar);
+//			String mensajeDelServidor = in.readUTF();
+//			mensajeDelServidor = desEncriptar(mensajeDelServidor);
+//			bw.write("Su encriptacion fue : " + mensajeDelServidor);
+//			bw.flush();
+//			bw.close();
+//			br.close();
+//			socket.close();
+//			in.close();
+//			out.close();
 
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
 	}
-
 
 	public int getClave() {
 		return claveEncriptar;
@@ -91,26 +109,30 @@ public class Cliente {
 	public static void setId(int id) {
 		Cliente.id = id;
 	}
-	
-	private static String encriptarMensajeCesar() {
+
+	public static String encriptarMensajeCesar() {
 		String respuesta = "";
-		char caracter ;
-			for (int i = 0; i < mensaje.length(); i++) {
-				caracter = mensaje.charAt(i);
-				caracter = (char) (caracter + claveEncriptar);
-				respuesta += Character.toString((caracter)) + "";
-			}
+		char caracter;
+		for (int i = 0; i < mensaje.length(); i++) {
+			caracter = mensaje.charAt(i);
+			caracter = (char) (caracter + claveEncriptar);
+			respuesta += Character.toString((caracter)) + "";
+		}
 		return respuesta;
 	}
-	
+
 	/**
-	 * Método que recibe un mensaje encriptado que envió otro cliente y lo desencripta.
+	 * Método que recibe un mensaje encriptado que envió otro cliente y lo
+	 * desencripta.
+	 * 
 	 * @param mensajeDelServidor
 	 * @return mensajeDE
 	 */
-	private static String desEncriptar(String mensajeDelServidor) {
+	
+	
+	public static String desEncriptar(String mensajeDelServidor) {
 		String mensajeDE = "";
-		char caracter ;
+		char caracter;
 		for (int i = 0; i < mensaje.length(); i++) {
 			caracter = mensaje.charAt(i);
 			caracter = (char) (caracter - claveEncriptar);
@@ -118,4 +140,36 @@ public class Cliente {
 		}
 		return mensajeDE;
 	}
+	
+	private static String desEncriptarClave(String clave) {
+		StringBuilder des = new StringBuilder();
+		String arr[] = clave.split(" ");
+
+		for (int i = 0; i < arr.length; i++) {
+			int valor = Integer.parseInt(arr[i], 16);
+			des.append((char) valor + "");
+		}
+
+		return des.toString();
+	}
+	public static int getClaveEncriptar() {
+		return claveEncriptar;
+	}
+	public static void setClaveEncriptar(int claveEncriptar) {
+		Cliente.claveEncriptar = claveEncriptar;
+	}
+	public static String getClaveEncriptada() {
+		return claveEncriptada;
+	}
+	public static void setClaveEncriptada(String claveEncriptada) {
+		Cliente.claveEncriptada = claveEncriptada;
+		setClaveEncriptar(Integer.parseInt(desEncriptarClave(getClaveEncriptada())));
+	}
+	public static String getMensaje() {
+		return mensaje;
+	}
+	public static void setMensaje(String mensaje) {
+		Cliente.mensaje = mensaje;
+	}
+	
 }

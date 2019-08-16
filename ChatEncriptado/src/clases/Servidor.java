@@ -15,7 +15,7 @@ public class Servidor {
 	/**
 	 * Puerto por donde el servidor atendera a los clientes
 	 */
-	public static final int PORT = 8000;
+	public static final int PORT = 9000;
 	/**
 	 * El servidor dispone de un serversocket, para permitir la conexion a los clientes
 	 */
@@ -42,11 +42,16 @@ public class Servidor {
 	 * Cantidad de clientes conectados y lista de ids.
 	 */
 	private static int numClientes;
+	/**
+	 * Clave de encriptacion para enviar a los clientes
+	 */
+	private static int clave;
 	
 	/**
 	 * Constructor del servidor.
 	 */
 	public Servidor() {
+		clave = (int) (Math.random() * 20) + 1;
 		numClientes = 0;
 		clientes = new HashMap<>();
 		inCliente = new HashMap<>();
@@ -61,7 +66,7 @@ public class Servidor {
 		Servidor ser = new Servidor();
 		DataInputStream in;
 		DataOutputStream out;
-		int clave = (int) (Math.random() * 5) + 1;
+		
 		try {
 			serverSocket = new ServerSocket(PORT);
 		} catch (IOException e) {
@@ -113,6 +118,19 @@ public class Servidor {
 	 * @param mensajeObtenidoCliente != Null && != ""
 	 * @return
 	 */
+	public static String claveHexadecimal(String clave) {
+		
+		StringBuilder hexadecimal = new StringBuilder();
+		char arr[] = clave.toCharArray();
+
+		for (int i = 0; i < arr.length; i++) {
+			int value = arr[i];
+			hexadecimal.append(Integer.toHexString(value) + " ");
+		}
+
+		return hexadecimal.toString().trim();
+	}
+	
 	private static String metodoServicioServer(String mensajeObtenidoCliente) {
 		
 		String respuesta = "";
@@ -151,6 +169,9 @@ public class Servidor {
 	public static int getNumClientes() {
 		return numClientes;
 	}
+	public static void aumentarClientes() {
+		numClientes++;
+	}
 
 	public static void setNumClientes(int numClientes) {
 		Servidor.numClientes =+ numClientes;
@@ -171,5 +192,20 @@ public class Servidor {
 	public static void setOutCliente(HashMap<Integer, DataOutputStream> outCliente) {
 		Servidor.outCliente = outCliente;
 	}
+
+
+
+
+	public static int getClave() {
+		return clave;
+	}
+
+
+
+
+	public void setClave(int clave) {
+		this.clave = clave;
+	}
+	
 	
 }

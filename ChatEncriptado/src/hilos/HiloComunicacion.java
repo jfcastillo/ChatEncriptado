@@ -1,5 +1,6 @@
 package hilos;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.Socket;
 
@@ -20,25 +21,29 @@ public class HiloComunicacion implements Runnable {
 	
 	@Override
 	public void run() {
-		
-		cliente = server.getClientes().get(id);
-		try {
-			String mensaje = server.getInCliente().get(id).readUTF();
-			if(id==1) {
-				
-				server.getOutCliente().get(2).writeUTF(mensaje);
-				id = 2;
-				
-			} else if(id==2) {
-				
-				server.getOutCliente().get(1).writeUTF(mensaje);
-				id = 1;
-			}
+		while(true) {
 			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			try {
+				cliente = server.getClientes().get(id);
+				DataInputStream in = server.getInCliente().get(id);
+				String mensaje = in.readUTF();
+				if(id==1) {
+					
+					server.getOutCliente().get(2).writeUTF(mensaje);
+					id = 2;
+					
+				} else if(id==2) {
+					
+					server.getOutCliente().get(1).writeUTF(mensaje);
+					id = 1;
+				}
+				
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
+		
 
 	}
 
