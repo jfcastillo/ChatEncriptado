@@ -23,15 +23,23 @@ public class Cliente {
 	 * Socket que permitira la conexion con el servidor
 	 */
 	private static Socket socket;
-	
-	private static int clave;
+	/**
+	 * Clave para encriptar el mensaje.
+	 */
+	private static int claveEncriptar;
+	/**
+	 * Numero de identificacion del cliente respecto al servidor.
+	 */
+	private static int id;
+	/**
+	 * Mensaje a enviar a otro cliente.
+	 */
+	private static String mensaje;
 	
 	/**
 	 * Main
 	 * @param args
 	 */
-	
-	
 	public static void main(String[] args) {
 		
 		DataInputStream in;
@@ -50,9 +58,10 @@ public class Cliente {
 			in = new DataInputStream(socket.getInputStream());
 			out = new DataOutputStream(socket.getOutputStream());
 			out.writeUTF(mensaje);
-			clave = Integer.parseInt(in.readUTF());
-			System.out.println(clave);
+			claveEncriptar = Integer.parseInt(in.readUTF());
+			System.out.println(claveEncriptar);
 			String mensajeDelServidor = in.readUTF();
+			mensajeDelServidor = desEncriptar(mensajeDelServidor);
 			bw.write("Su encriptacion fue : " + mensajeDelServidor);
 			bw.flush();
 			bw.close();
@@ -64,17 +73,49 @@ public class Cliente {
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
-		
-		
 	}
 
+
 	public int getClave() {
-		return clave;
+		return claveEncriptar;
 	}
 
 	public void setClave(int clave) {
-		this.clave = clave;
+		this.claveEncriptar = clave;
+	}
+
+	public static int getId() {
+		return id;
+	}
+
+	public static void setId(int id) {
+		Cliente.id = id;
 	}
 	
-
+	private static String encriptarMensajeCesar() {
+		String respuesta = "";
+		char caracter ;
+			for (int i = 0; i < mensaje.length(); i++) {
+				caracter = mensaje.charAt(i);
+				caracter = (char) (caracter + claveEncriptar);
+				respuesta += Character.toString((caracter)) + "";
+			}
+		return respuesta;
+	}
+	
+	/**
+	 * Método que recibe un mensaje encriptado que envió otro cliente y lo desencripta.
+	 * @param mensajeDelServidor
+	 * @return mensajeDE
+	 */
+	private static String desEncriptar(String mensajeDelServidor) {
+		String mensajeDE = "";
+		char caracter ;
+		for (int i = 0; i < mensaje.length(); i++) {
+			caracter = mensaje.charAt(i);
+			caracter = (char) (caracter - claveEncriptar);
+			mensajeDE += Character.toString((caracter)) + "";
+		}
+		return mensajeDE;
+	}
 }
