@@ -5,14 +5,17 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
 import clases.Servidor;
 
-public class HiloChat implements Runnable {
+public class HiloConexion implements Runnable {
 
 	private Servidor server;
 
-	public HiloChat(Servidor server) {
+	public HiloConexion(Servidor server) {
 		this.server = server;
 	}
 
@@ -31,7 +34,17 @@ public class HiloChat implements Runnable {
 				server.getClientes().put(server.getNumClientes(), cliente);
 				in = new DataInputStream(cliente.getInputStream());
 				out = new DataOutputStream(cliente.getOutputStream());
-				
+				String mensajeClientes = "IDs de clientes conectados\n";
+				if (server.getNumClientes() > 1) {					
+					
+					
+
+					for (Entry<Integer, Socket> entry : server.getClientes().entrySet()) {
+						mensajeClientes += " Cliente "+entry.getKey()+"\n";
+					    
+					}
+					out.writeUTF(mensajeClientes);
+				}
 				System.out.println("Conectado el cliente "+server.getNumClientes());
 				
 				out.writeUTF("Usted es el cliente "+server.getNumClientes()+"\n");

@@ -7,7 +7,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 
-import hilos.HiloChat;
+import hilos.HiloConexion;
 
 public class Servidor {
 	
@@ -73,7 +73,7 @@ public class Servidor {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		HiloChat hiloConexion = new HiloChat(ser);
+		HiloConexion hiloConexion = new HiloConexion(ser);
 		hiloConexion.run();
 		
 //		try {
